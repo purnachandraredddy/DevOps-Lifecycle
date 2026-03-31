@@ -1,0 +1,44 @@
+.cursor/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+.venv/
+venv/
+ENV/
+env/
+
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs / local data
+*.log
+*.sqlite3
+*.db
+
+# Environment / secrets
+.env
+.env.*
+credentials*.json
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# OS
+.DS_Store
+Thumbs.db
