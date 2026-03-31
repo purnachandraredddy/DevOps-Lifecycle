@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fastapi-app
+  namespace: default
+  labels:
+    app: fastapi-app
+spec:
+  # selector: the Service finds pods by matching these labels against pod template labels.
+  # This is the ONLY thing connecting a Service to its backend pods.
+  # If this selector doesn't match any pods, the endpoint list is empty → 503 from Ingress.
+  # Always verify with: kubectl get endpoints fastapi-app
+  selector:
+    app: fastapi-app
+
+  # ClusterIP: the Service gets a stable virtual IP that is only reachable inside the cluster.
+  # kube-proxy writes iptables/IPVS rules that DNAT traffic from this IP to one of the pod IPs.
+  # The ClusterIP doesn't change unless the Service is deleted and recreated.
+  # Other types:
+  #   NodePort: exposes the Service on each node's IP at a static port (30000-32767)
+  #   LoadBalancer: provisions a cloud LB (AWS ALB, GCP GLB) in front of the NodePort
+  #   ExternalName: a DNS CNAME to an external hostname — no proxying, no ClusterIP
+  type: ClusterIP
+
+  ports:
+    - name: http
+      protocol: TCP
+      # port: the port on which the Service is reachable (ClusterIP:port).
+      # Other pods inside the cluster use this port to reach the Service.
+      port: 80
+      # targetPort: the port on the pod to forward traffic to.
+      # This must match the containerPort in the pod spec (or the actual port the app binds to).
+      # Can be a number (8000) or a named port that matches a port name in the container spec.
+      targetPort: 8000
+      # Named reference is safer for changes:
+      # targetPort: http   (references the port named "http" in the container)
+
+  # sessionAffinity: None = kube-proxy distributes requests across all ready pods (round-robin
+  # in IPVS, probabilistic in iptables mode). Set to ClientIP to pin a client to one pod,
+  # but this can cause uneven load and breaks if the pod restarts.
+  sessionAffinity: None

@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-app
+  namespace: default
+  labels:
+    app: fastapi-app
+    # Labels on the Deployment object itself are for human organization only.
+    # They are NOT used by the Service selector — that uses pod template labels below.
+spec:
+  replicas: 2
+  # selector.matchLabels must match spec.template.metadata.labels exactly.
+  # This is what the Deployment uses to find and manage its own pods.
+  # If these don't match, the Deployment is invalid and will be rejected.
+  selector:
+    matchLabels:
+      app: fastapi-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # At most 1 pod can be unavailable at any time during the rollout.
+      # With replicas:2, this means 1 pod is always running during an update.
+      maxUnavailable: 1
+      # At most 1 extra pod can be created above the desired replica count.
+      # With replicas:2, the cluster has max 3 pods during an update.
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        # These labels MUST match selector.matchLabels above.
+        # These are also what the Service uses to find pods (see service.yaml).
+        app: fastapi-app
+    spec:
+      containers:
+        - name: fastapi-app
+          # In a real cluster, this would be a registry image, e.g.:
+          # image: ghcr.io/purnachandraredddy/devops-lifecycle-app:latest
+          # For local development with minikube, use imagePullPolicy: Never
+          # after running: minikube image load fastapi-app:dev
+          image: fastapi-app:dev
+          imagePullPolicy: Never  # use local image; change to IfNotPresent or Always for registry images
+
+          ports:
+            - name: http
+              containerPort: 8000
+              # containerPort is documentation only — it does NOT open/expose the port.
+              # The app must already be listening on this port inside the container.
+              # Kubernetes uses this for reference in probes and Service targeting.
+              protocol: TCP
+
+          # Resource requests: what the scheduler needs available on the node.
+          # Resource limits: hard ceiling; container is OOMKilled if memory exceeds limit.
+          # Rule of thumb: requests should match average load; limits should be ~2x requests.
+          resources:
+            requests:
+              cpu: "100m"       # 0.1 CPU core
+              memory: "128Mi"   # 128 megabytes
+            limits:
+              cpu: "250m"       # 0.25 CPU core
+              memory: "256Mi"   # 256 megabytes
+
+          # --- PROBES (key learning area) ---
+
+          # startupProbe: runs FIRST. Liveness and readiness do NOT start until this succeeds.
+          # Purpose: give slow-starting apps time to initialize without being killed by liveness.
+          # If startupProbe fails failureThreshold times, the container is KILLED and restarted.
+          # During startup probe period: pod shows 0/1 Ready in `kubectl get pods`.
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            # Total startup budget: periodSeconds * failureThreshold = 5 * 12 = 60 seconds.
+            # If the app doesn't pass /health within 60s, kubelet kills the container.
+            periodSeconds: 5
+            failureThreshold: 12
+
+          # livenessProbe: runs after startupProbe succeeds.
+          # Purpose: detect containers that are stuck/deadlocked and should be restarted.
+          # If this fails consecutively (failureThreshold times), the container is KILLED and restarted.
+          # The Deployment does NOT replace the pod — the same pod restarts. CrashLoopBackOff appears
+          # if it keeps failing.
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 0   # 0 because startupProbe already confirmed app is up
+            periodSeconds: 10
+            failureThreshold: 3
+            timeoutSeconds: 2
+
+          # readinessProbe: runs after startupProbe succeeds.
+          # Purpose: signal whether the pod should receive traffic via the Service.
+          # If this fails, the pod IP is REMOVED from the Service's endpoint list.
+          # The pod continues RUNNING (not killed). kubectl get pods shows 0/1 Ready.
+          # As soon as the probe passes again, the pod is re-added to endpoints.
+          # A Deployment will NOT replace a pod just because readiness fails — it only replaces
+          # if the pod actually terminates (crash) or is evicted.
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1   # must pass once to be considered ready (default, shown for clarity)
+            timeoutSeconds: 2
+
+          # Environment variables available inside the container
+          env:
+            - name: APP_ENV
+              value: "development"
+            # To pull a value from a Secret:
+            # - name: DB_PASSWORD
+            #   valueFrom:
+            #     secretKeyRef:
+            #       name: db-secret
+            #       key: password
+
+      # terminationGracePeriodSeconds: how long Kubernetes waits for the container to
+      # handle SIGTERM and shut down cleanly before sending SIGKILL.
+      # Default is 30s. For a FastAPI app with long-running requests, set this higher.
+      terminationGracePeriodSeconds: 30

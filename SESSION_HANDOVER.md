@@ -1,5 +1,6 @@
 # Session Handover — DevOps Lifecycle
 
+Read SESSION_HANDOVER.md first, then continue from the latest pending task
 > **Start every new Cursor chat on any machine with:**
 > `Read SESSION_HANDOVER.md first, then continue from the latest pending task.`
 
@@ -35,6 +36,21 @@
 ---
 
 ## What Has Been Completed
+
+### Day 2 (2026-03-30)
+- Completed DNS deep-dive class notes (`daily-notes/day2-class2.md`):
+  - ndots:5 resolution sequence (4 queries per short hostname)
+  - CoreDNS Corefile anatomy (plugin chain, forward, cache 30s TTL)
+  - DNS TTL failure scenarios: Service delete/recreate, StatefulSet pod IP change, JVM caching footgun, external DNS failover
+  - DNS debugging commands: `nslookup`, `dig +search`, CoreDNS metrics, dns-debug pod
+  - Full DNS record structure for Services, headless Services, and StatefulSet pods
+- Wrote 5 precise doubts (`doubts/day2-doubts.md`): CoreDNS pod failure blast radius, ndots+FQDN interaction, split-horizon DNS, SERVFAIL vs NXDOMAIN, DNS+connection pooling during DB failover
+- Created Kubernetes manifests (`k8s/`):
+  - `deployment.yaml` — 2-replica Deployment with startup/liveness/readiness probes, resource limits, annotated
+  - `service.yaml` — ClusterIP Service with selector explanation and iptables/IPVS notes
+  - `ingress.yaml` — nginx Ingress with Exact/Prefix path rules + full nginx.conf generation explanation
+  - `k8s/README.md` — full local deploy guide (minikube), layer-by-layer verification steps, probe behavior diagram
+- Created `app/Dockerfile` and `app/requirements.txt` for building the FastAPI image
 
 ### Day 1 (2026-03-25)
 - Established the 8-layer troubleshooting model (Client → DNS → Network → Ingress → Service → Pod → Application → Config)
@@ -104,11 +120,12 @@
 
 ## Pending / Next Steps
 
-- [ ] Day 2 class notes and doubts
-- [ ] Create `k8s/` manifests for the sample app (Deployment, Service, Ingress)
-- [ ] Hands-on exercise: deploy FastAPI app to a local/dev cluster
-- [ ] Deep-dive into DNS (CoreDNS Corefile, ndots, search domains) — priority gap
-- [ ] Deep-dive into Probes (startup probe gating, readiness gate vs readiness probe)
+- [x] Day 2 class notes and doubts *(completed 2026-03-30)*
+- [x] Create `k8s/` manifests for the sample app (Deployment, Service, Ingress) *(completed 2026-03-30)*
+- [x] Deep-dive into DNS (CoreDNS Corefile, ndots, search domains) *(completed in Day 2 notes)*
+- [ ] **NEXT:** Hands-on exercise: deploy FastAPI app to local minikube cluster (follow `k8s/README.md`)
+- [ ] Day 3 class notes — Deep-dive into Probes (startup probe gating, readiness gate vs readiness probe)
+- [ ] Deep-dive into TLS (handshake tracing, mTLS, SNI + Ingress) — scored 2/5, priority gap
 - [ ] 2-week self-assessment re-score (target date: ~2026-04-08)
 
 ---
@@ -124,4 +141,4 @@
 
 ---
 
-*Last updated: 2026-03-30*
+*Last updated: 2026-03-30 (Day 2 session)*
