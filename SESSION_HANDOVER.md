@@ -1,5 +1,6 @@
 # Session Handover — DevOps Lifecycle
 
+Read SESSION_HANDOVER.md first, then continue from the latest pending task
 > **Start every new Cursor chat on any machine with:**
 > `Read SESSION_HANDOVER.md first, then continue from the latest pending task.`
 
@@ -34,7 +35,45 @@
 
 ---
 
+## Active 30-Day Execution Plan
+
+**Plan structure:** each day has a morning planning sheet + 5-question class notes + reference doc  
+**Daily format:** Learn → Observe at Copart → Rebuild in lab → Write → Explain out loud
+
+| Day | Topic | Status | Key file |
+|-----|-------|--------|----------|
+| 1 | Systems thinking & layered troubleshooting | ✅ done | `daily-notes/day1-class1.md` |
+| 2 | Linux process model — PID, ports, logs | ✅ done | `daily-notes/day2-linux-process.md` |
+| 3 | Files, environment variables, runtime config | ✅ done | `daily-notes/day3-files-env-config.md` |
+| 4 | HTTP from first principles | ⬜ | |
+| 5 | DNS and name resolution | ✅ notes ready early | `daily-notes/day5-dns-deep-dive.md` |
+| 6 | HTTPS and TLS | ⬜ | |
+| 7 | Week 1 consolidation | ⬜ | |
+| 8–14 | FastAPI app + Docker + K8s core objects | ⬜ | `k8s/` manifests ready |
+| 15–21 | Service networking, Ingress, failure labs | ⬜ | |
+| 22–30 | Troubleshooting framework, docs, explanation drill | ⬜ | |
+
+---
+
 ## What Has Been Completed
+
+### Day 3 (2026-04-01)
+- Morning planning sheet (`daily-notes/day3-morning-plan.md`) — config layer framing, Copart context, lab plan
+- Class notes (`daily-notes/day3-files-env-config.md`): 5 questions covering /proc filesystem, env var inheritance model, K8s ConfigMap/Secret injection (env vars vs volume mounts), config precedence chain, configserver cascade failure at Copart classified at config layer
+- Reference doc (`docs/files-env-config-notes.md`): complete cheatsheet — /proc commands, env var inspection, ConfigMap/Secret manifests and both injection strategies, update behavior comparison, precedence chain, troubleshooting decision tree, failure signature table
+- Doubts file (`doubts/day3-doubts.md`): 5 precise questions — ConfigMap atomic file update mechanics, Secret storage and confidentiality at rest, `envFrom` key collision precedence, Python `os.environ` live vs snapshot, Secret lifecycle when deleted after pod start
+
+### Day 2 (2026-03-30)
+- Morning planning sheet (`daily-notes/day2-morning-plan.md`) — daily format template established
+- Class notes (`daily-notes/day2-linux-process.md`): 5 questions covering process/PID, 0.0.0.0 vs 127.0.0.1 bind failure, log flow from stdout to `kubectl logs`, process-layer failures before K8s, Copart configserver observation classified at process layer
+- Reference doc (`docs/linux-process-notes.md`): complete cheatsheet — ps/ss/lsof/top commands, state table, OOMKill signature, signals, cgroup memory, troubleshooting decision tree, failure-to-signature table
+- DNS deep-dive content (originally tagged Day 2, now correctly placed as Day 5): `daily-notes/day5-dns-deep-dive.md`, `doubts/day5-doubts.md`
+- Created Kubernetes manifests (`k8s/`):
+  - `deployment.yaml` — 2-replica Deployment with startup/liveness/readiness probes, resource limits, annotated
+  - `service.yaml` — ClusterIP Service with selector explanation and iptables/IPVS notes
+  - `ingress.yaml` — nginx Ingress with Exact/Prefix path rules + full nginx.conf generation explanation
+  - `k8s/README.md` — full local deploy guide (minikube), layer-by-layer verification steps, probe behavior diagram
+- Created `app/Dockerfile` and `app/requirements.txt` for building the FastAPI image
 
 ### Day 1 (2026-03-25)
 - Established the 8-layer troubleshooting model (Client → DNS → Network → Ingress → Service → Pod → Application → Config)
@@ -104,11 +143,15 @@
 
 ## Pending / Next Steps
 
-- [ ] Day 2 class notes and doubts
-- [ ] Create `k8s/` manifests for the sample app (Deployment, Service, Ingress)
-- [ ] Hands-on exercise: deploy FastAPI app to a local/dev cluster
-- [ ] Deep-dive into DNS (CoreDNS Corefile, ndots, search domains) — priority gap
-- [ ] Deep-dive into Probes (startup probe gating, readiness gate vs readiness probe)
+- [x] Day 1 — Systems thinking & layered troubleshooting *(2026-03-25)*
+- [x] Day 2 — Linux process model: PID, ports, logs, bind address *(2026-03-30)*
+- [x] K8s manifests for FastAPI app (Deployment, Service, Ingress) *(ready in `k8s/`)*
+- [x] DNS deep-dive notes *(ready early in `daily-notes/day5-dns-deep-dive.md`)*
+- [x] **Day 3** — Files, environment variables, config, runtime context *(2026-04-01)*
+- [ ] **NEXT: Day 4** — HTTP from first principles
+- [ ] Day 5 — DNS (notes already exist in `day5-dns-deep-dive.md`, do the hands-on lab)
+- [ ] Day 6 — HTTPS and TLS
+- [ ] Day 7 — Week 1 consolidation + architecture diagram v1
 - [ ] 2-week self-assessment re-score (target date: ~2026-04-08)
 
 ---
@@ -124,4 +167,4 @@
 
 ---
 
-*Last updated: 2026-03-30*
+*Last updated: 2026-04-01 (Day 3 — Files, env vars, runtime config; config layer mechanics)*
